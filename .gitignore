@@ -11,7 +11,7 @@ wheels/
 .env
 
 #dataset
-.documents
+documents/
 
 #DataBase
-.Database
+Database/
