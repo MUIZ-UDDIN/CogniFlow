@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-from vault import VectorVault
+from backend.vault import VectorVault
 from openai import OpenAI
 
 load_dotenv()

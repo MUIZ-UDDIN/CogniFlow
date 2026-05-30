@@ -2,7 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from backend.core import CogniFlow
 import logging
 
-logging.basicConfig(filename="logs", level=logging.INFO)
+logging.basicConfig(filename="./logs/logs", level=logging.INFO)
 
 engine = CogniFlow()
 

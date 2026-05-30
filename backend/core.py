@@ -1,6 +1,6 @@
-from brain import knowledgeBrain
-from ingestor import DocumentIngester
-from vault import VectorVault
+from backend.brain import knowledgeBrain
+from backend.ingestor import DocumentIngester
+from backend.vault import VectorVault
 
 class CogniFlow:
     def __init__(self) -> None:
