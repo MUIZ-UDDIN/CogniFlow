@@ -24,16 +24,26 @@ class knowledgeBrain():
                 {"role":"system", "content":instructions},
                 {"role":"user", "content": user_message}
                 ],
-            temperature=0.1
+            temperature=0.1,
+            stream=True
             )
 
-        return response.choices[0].message.content
+        for chunk in response:
+            Content = chunk.choices[0].delta.content
+
+            if Content:      
+                yield Content
+
+        # return response.choices[0].message.content
 
 if __name__ == "__main__":
     engine = knowledgeBrain()
     VaultEngine = VectorVault()
-    question = "Who is muiz"
+    question = "Who is muiz and what his role and what they are presenting?"
     chunks = VaultEngine.search(question)
 
     result = engine.ask(question, chunks)
-    print(result)
+    
+    for text in result:
+
+        print(text, end="", flush=True)
