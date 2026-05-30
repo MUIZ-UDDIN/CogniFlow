@@ -1,13 +1,24 @@
-from fastapi import WebSocket
-from core import CogniFlow
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from backend.core import CogniFlow
+import logging
 
-@app.WebSocket("/chat")
+logging.basicConfig(filename="logs", level=logging.INFO)
 
-async def websocket_endpoint(websocket= WebSocket):
+engine = CogniFlow()
+
+app = FastAPI()
+
+@app.websocket("/chat")
+
+async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
 
-    while True:
-        data = await websocket.receive_text()
+    try:
+        while True:
+            data = await websocket.receive_text()
 
-        for words in CogniFlow.ask_question(data):
-            await websocket.send_text(words)
+            for words in engine.ask_question(data):
+                await websocket.send_text(words)
+    
+    except WebSocketDisconnect:
+        logging.info("User has disconnected gracefully!")

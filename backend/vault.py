@@ -6,7 +6,7 @@ Worker = DocumentIngester()
 
 class VectorVault:
     def __init__(self) -> None:
-        self.DB_path = chromadb.PersistentClient(path="./Database")
+        self.DB_path = chromadb.PersistentClient(path="../Database")
         self.brain = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
         self.collected_data = self.DB_path.get_or_create_collection(name="embaded_db", embedding_function=self.brain) #type: ignore
 
@@ -43,7 +43,7 @@ class VectorVault:
 
 
 if __name__ == "__main__":
-    folderPath = "./documents/"
+    folderPath = "../documents/"
     Data = Worker.Reader(folderPath)
     engine = VectorVault()
     result = engine.add_documents(Data)
