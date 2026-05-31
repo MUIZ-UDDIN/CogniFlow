@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { FileTextIcon, SparklesIcon } from "lucide-react";
+import { FileTextIcon } from "lucide-react";
 import MessageBubble, { type Message } from "@/components/MessageBubble";
 import ChatInput from "@/components/ChatInput";
 
