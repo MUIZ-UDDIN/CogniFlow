@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={geistMono.variable}>
-      <body className="bg-slate-950 text-slate-100 antialiased">
+    <html lang="en" suppressHydrationWarning={true} className={geistMono.variable}>
+      <body className="bg-slate-950 text-slate-100 antialiased" suppressHydrationWarning={true}>
         {/*
           Full-screen flex container — no page-level scroll.
           Sidebar is fixed-width on the left; main area fills the rest.

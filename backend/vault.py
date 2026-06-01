@@ -6,7 +6,7 @@ Worker = DocumentIngester()
 
 class VectorVault:
     def __init__(self) -> None:
-        self.DB_path = chromadb.PersistentClient(path="../Database")
+        self.DB_path = chromadb.PersistentClient(path="./Database")
         self.brain = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
         self.collected_data = self.DB_path.get_or_create_collection(name="embaded_db", embedding_function=self.brain) #type: ignore
 
@@ -30,7 +30,7 @@ class VectorVault:
             ids=ids
         )
 
-    def search(self, question: str, n_result: int=3) -> list:
+    def search(self, question: str, n_result: int=7) -> list:
         Ans = self.collected_data.query(
             query_texts=[question],
             n_results=n_result
@@ -40,6 +40,8 @@ class VectorVault:
 
         return result[0] if result else []
 
+    def count(self) -> int:
+        return self.collected_data.count()
 
 
 if __name__ == "__main__":

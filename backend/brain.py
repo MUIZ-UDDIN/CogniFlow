@@ -15,7 +15,7 @@ class knowledgeBrain():
     def ask(self, question:str, context: list):
         full_text = "\n".join(context)
 
-        instructions = "You are CogniFlow, a professional PDF analyst. Answer the question using ONLY the context provided. If the answer isn't there, say you don't know."
+        instructions = "You are CogniFlow, a professional PDF analyst. Answer the question using ONLY the context provided. If the answer isn't there, say you don't know. only do a friendly response for 'hi', 'hey', means for greeting messages and focus on document"
         user_message = f"Document Data: {full_text}\n\nUser Question: {question}"
 
         response = self.client.chat.completions.create(

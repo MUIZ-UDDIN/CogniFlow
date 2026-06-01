@@ -5,7 +5,6 @@ import { FileTextIcon } from "lucide-react";
 import MessageBubble, { type Message } from "@/components/MessageBubble";
 import ChatInput from "@/components/ChatInput";
 
-// ── Seed data so the UI isn't empty on first load ──────────────────────────
 const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
@@ -22,16 +21,74 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // 1. Define the Ref for the WebSocket connection
+  const socketRef = useRef<WebSocket | null>(null);
+
   // Auto-scroll to the latest message whenever messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
+  // 2. Define the Effect to manage the WebSocket connection lifecycle
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8000/chat");
+    socketRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("Connected to Chat WebSocket");
+    };
+
+    ws.onmessage = (event) => {
+      const chunk = event.data;
+
+      // Turn off loading animation once chunks start coming in
+      setIsLoading(false);
+
+      // The Secret for Streaming: Functional updates + updating the last item
+      setMessages((prev) => {
+        const lastMessage = prev[prev.length - 1];
+
+        // If the last message is already from the assistant, append text to it
+        if (lastMessage && lastMessage.role === "assistant" && lastMessage.id !== "1") {
+          return [
+            ...prev.slice(0, -1), // Everything except the last message
+            { ...lastMessage, content: lastMessage.content + chunk }, // Append chunk
+          ];
+        }
+
+        // If it's a brand new response stream, create a new assistant message object
+        const newAiMsg: Message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: chunk,
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        };
+        return [...prev, newAiMsg];
+      });
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket Error:", error);
+      setIsLoading(false);
+    };
+
+    ws.onclose = () => {
+      console.log("WebSocket Disconnected");
+      setIsLoading(false);
+    };
+
+    // Clean up connection when the component unmounts
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  // 3. Update handleSend to stream data out via WebSocket
+  const handleSend = () => {
     const text = inputValue.trim();
     if (!text || isLoading) return;
 
-    // 1. Append the user message immediately
+    // Append the user message immediately
     const userMsg: Message = {
       id: Date.now().toString(),
       role: "user",
@@ -42,16 +99,13 @@ export default function ChatPage() {
     setInputValue("");
     setIsLoading(true);
 
-    // 2. Simulate an AI response (replace with real WebSocket / API call later)
-    await new Promise((r) => setTimeout(r, 1200));
-    const aiMsg: Message = {
-      id: (Date.now() + 1).toString(),
-      role: "assistant",
-      content: `You asked: "${text}". This is a placeholder response — wire up your API here!`,
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    };
-    setMessages((prev) => [...prev, aiMsg]);
-    setIsLoading(false);
+    // Send the message text over the established WebSocket connection
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(text);
+    } else {
+      console.error("WebSocket is not connected.");
+      setIsLoading(false);
+    }
   };
 
   return (
