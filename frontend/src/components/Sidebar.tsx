@@ -1,22 +1,20 @@
-/**
- * Sidebar — Server Component (no interactivity needed here).
- *
- * Layout role:
- *   • Fixed width  : w-80  (320 px)
- *   • Full height  : h-full (inherits h-screen from parent flex)
- *   • Flex column  : stacks logo → doc list → footer
- */
+"use client";
 
 import { PlusIcon, FileTextIcon, MessageSquareIcon } from "lucide-react";
-
-const RECENT_DOCS = [
-  { id: "1", title: "Product Requirements v2.pdf" },
-  { id: "2", title: "Q3 Research Notes.docx" },
-  { id: "3", title: "Architecture Overview.md" },
-  { id: "4", title: "Meeting Transcript — June.txt" },
-];
+import { useEffect, useState } from "react";
 
 export default function Sidebar() {
+
+  const [files, setFiles] = useState<string[]>([])
+
+  useEffect(() => {
+    fetch("http://localhost:8000/files")
+      .then(response => response.json())
+      .then(data => setFiles(data))
+
+      .catch((err) => console.log("Error fetching files:", err))
+  }, [])
+
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col bg-slate-900 border-r border-slate-800">
 
@@ -56,8 +54,8 @@ export default function Sidebar() {
           Recent Documents
         </p>
         <ul className="flex flex-col gap-1 overflow-y-auto">
-          {RECENT_DOCS.map((doc) => (
-            <li key={doc.id}>
+          {files.map((doc) => (
+            <li key={doc}>
               <button
                 type="button"
                 className="
@@ -68,7 +66,7 @@ export default function Sidebar() {
                 "
               >
                 <FileTextIcon className="h-4 w-4 shrink-0 text-slate-500" />
-                <span className="truncate">{doc.title}</span>
+                <span className="truncate">{doc}</span>
               </button>
             </li>
           ))}
