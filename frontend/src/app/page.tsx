@@ -4,13 +4,14 @@ import { useState, useRef, useEffect } from "react";
 import { FileTextIcon } from "lucide-react";
 import MessageBubble, { type Message } from "@/components/MessageBubble";
 import ChatInput from "@/components/ChatInput";
+import Sidebar from "@/components/Sidebar";
 
 const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     role: "assistant",
     content:
-      "Hello! I'm CogniFlow. Upload a document or select one from the sidebar, then ask me anything about its contents.",
+      "Hello! I'm CogniFlow. How can i help you? select one from the sidebar, then ask me anything about its contents.",
     timestamp: "Just now",
   },
 ];
@@ -19,6 +20,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [SelectFile, setSelectFile] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // 1. Define the Ref for the WebSocket connection
@@ -109,7 +111,14 @@ export default function ChatPage() {
   };
 
   return (
-    <>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar 
+        SelectedFile = {SelectFile}
+        onSelectedFile = {setSelectFile}
+      />
+    
+    <main className="flex flex-1 flex-col overflow-hidden">
+
       {/* ── Top bar ─────────────────────────────────────────── */}
       <header className="flex items-center gap-3 border-b border-slate-800 bg-slate-950 px-6 py-3.5">
         <div className="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5">
@@ -157,6 +166,7 @@ export default function ChatPage() {
         onSend={handleSend}
         isLoading={isLoading}
       />
-    </>
+      </main>
+    </div>
   );
 }

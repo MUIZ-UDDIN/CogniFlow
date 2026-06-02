@@ -3,7 +3,12 @@
 import { PlusIcon, FileTextIcon, MessageSquareIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
-export default function Sidebar() {
+  interface SidebarProps {
+    SelectedFile: string | null;
+    onSelectedFile: (fileName: string) => void;
+  }
+
+export default function Sidebar({ SelectedFile, onSelectedFile }: SidebarProps) {
 
   const [files, setFiles] = useState<string[]>([])
 
@@ -58,12 +63,16 @@ export default function Sidebar() {
             <li key={doc}>
               <button
                 type="button"
-                className="
+                onClick={() => onSelectedFile(doc)}
+                className={`
                   flex w-full items-center gap-3 rounded-md px-3 py-2.5
-                  text-left text-sm text-slate-300
-                  transition-colors duration-100
-                  hover:bg-slate-800 hover:text-slate-100
-                "
+                  text-left text-sm transition-all duration-100
+                  ${
+                    SelectedFile === doc
+                      ? "bg-slate-800 text-indigo-400 font-medium"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-slate-100 cursor-pointer"
+                  }
+                `}
               >
                 <FileTextIcon className="h-4 w-4 shrink-0 text-slate-500" />
                 <span className="truncate">{doc}</span>

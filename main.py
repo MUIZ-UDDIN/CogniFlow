@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from backend.core import CogniFlow
 from fastapi.middleware.cors import CORSMiddleware
 import logging
