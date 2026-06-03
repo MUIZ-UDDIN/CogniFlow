@@ -124,7 +124,7 @@ export default function ChatPage() {
         <div className="flex items-center gap-2 rounded-lg bg-slate-800 px-3 py-1.5">
           <FileTextIcon className="h-4 w-4 text-indigo-400" />
           <span className="text-sm font-medium text-slate-300">
-            No document selected
+            {SelectFile ? SelectFile : "No document has been selected"}
           </span>
         </div>
       </header>
