@@ -25,9 +25,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
     try:
         while True:
-            data = await websocket.receive_text()
+            data = await websocket.receive_json()
+            UserQuestion = data["question"]
+            SelectedDoc = data["file"]
 
-            for words in engine.ask_question(data):
+            for words in engine.ask_question(UserQuestion, SelectedDoc):
                 await websocket.send_text(words)
 
     except WebSocketDisconnect:

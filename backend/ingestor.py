@@ -22,7 +22,7 @@ class DocumentIngester():
                             chunk = texts[text: text + 1000]
 
                             all_chunks.append(
-                                {"file_name":file_path,
+                                {"file_name":files,
                                 "page_number": pages_num+1,
                                 "Content": chunk}
                             )

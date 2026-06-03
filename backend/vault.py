@@ -21,7 +21,8 @@ class VectorVault:
                 "file_name":chunk["file_name"],
                 "page_number":chunk["page_number"]
             }
-            ids.append(f"id_{index}")
+            safe_filename = chunk["file_name"].replace(" ","_")
+            ids.append(f"{safe_filename}_chunk_{index}")
             metas.append(Mt_data)
 
         self.collected_data.upsert(
@@ -30,11 +31,20 @@ class VectorVault:
             ids=ids
         )
 
-    def search(self, question: str, n_result: int=7) -> list:
-        Ans = self.collected_data.query(
-            query_texts=[question],
-            n_results=n_result
+    def search(self, question: str, file_name: str = None, n_result: int=7) -> list:
+        print(f"DEBUG: Searching for file name -> '{file_name}'")
+        if file_name:
+            Ans = self.collected_data.query(
+                query_texts=[question],
+                n_results=n_result,
+                where={"file_name": file_name}
             )
+
+        else:
+            Ans = self.collected_data.query(
+                query_texts=[question],
+                n_results=n_result,
+            )     
 
         result = Ans["documents"]
 
@@ -46,10 +56,14 @@ class VectorVault:
 
 if __name__ == "__main__":
     folderPath = "../documents/"
-    Data = Worker.Reader(folderPath)
-    engine = VectorVault()
-    result = engine.add_documents(Data)
-    test = engine.search("who is the document for?")
-    print(f"iteams saved in vault: {engine.collected_data.count()}")
-    print(test)
+    if os.path.exists(folderPath):
+        Data = Worker.Reader(folderPath)
+        engine = VectorVault()
+        result = engine.add_documents(Data)
+
+        test = engine.search("who is the document for?")
+        print(f"iteams saved in vault: {engine.collected_data.count()}")
+
+    else:
+        print(f"Test folder path '{folderPath}' not found. Skipping ingest test.")
     

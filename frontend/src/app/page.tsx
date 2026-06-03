@@ -101,9 +101,15 @@ export default function ChatPage() {
     setInputValue("");
     setIsLoading(true);
 
+    const packageData = {
+      question: text,
+      file: SelectFile
+    }
+    const PlainPkgData = JSON.stringify(packageData)
+
     // Send the message text over the established WebSocket connection
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-      socketRef.current.send(text);
+      socketRef.current.send(PlainPkgData);
     } else {
       console.error("WebSocket is not connected.");
       setIsLoading(false);

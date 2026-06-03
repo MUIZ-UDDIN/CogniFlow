@@ -40,10 +40,19 @@ if __name__ == "__main__":
     engine = knowledgeBrain()
     VaultEngine = VectorVault()
     question = "Who is muiz and what his role and what they are presenting?"
-    chunks = VaultEngine.search(question)
 
-    result = engine.ask(question, chunks)
+    # 🎯 Test your targeted search by passing the exact file name here:
+    target_file = "K-NEAREST NEIGHBOR ALGORITHM.pdf" 
+    chunks = VaultEngine.search(question, file_name=target_file)
+
+    # Safety Guard: Ensure chunks is handled as a list of strings
+    if isinstance(chunks, str):
+        chunks = [chunks]
+
+    print(f"DEBUG Chunks Passed to AI: {chunks}\n")
     
+    result = engine.ask(question, chunks)
+
     for text in result:
 
         print(text, end="", flush=True)

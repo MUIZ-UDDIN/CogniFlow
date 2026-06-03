@@ -18,7 +18,7 @@ class CogniFlow:
         else:
             print("Vector store already has documents")
         
-    def ask_question(self, question: str):
-        chunks = self.vault.search(question)
+    def ask_question(self, question: str, file_name: str = None):
+        chunks = self.vault.search(question, file_name=file_name)
 
         return self.brain.ask(question, chunks)
