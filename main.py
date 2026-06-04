@@ -1,8 +1,11 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from backend.core import CogniFlow
 from fastapi.middleware.cors import CORSMiddleware
+from backend.watcher import start_watcher
 import logging
 import os
+import time
+import threading
 
 logging.basicConfig(filename="./logs/logs", level=logging.INFO)
 
@@ -17,6 +20,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def run_watcher_thread():
+    # Call the exact same setup logic with zero duplication!
+    observer = start_watcher("./documents/") 
+    try:
+        while True:
+            time.sleep(1)
+    except Exception as e:
+        pass
+    finally:
+        observer.stop()
+        observer.join()
+
+@app.on_event("startup")
+async def startup_event():
+    threading.Thread(target=run_watcher_thread, daemon=True).start()
 
 @app.websocket("/chat")
 
