@@ -13,9 +13,21 @@ class knowledgeBrain():
         self.client = OpenAI(api_key= self.apiKey, base_url=self.invoke_url)
         
     def ask(self, question:str, context: list):
-        full_text = "\n".join(context)
+        formated_chunks = []
 
-        instructions = "You are CogniFlow, a professional PDF analyst. Answer the question using ONLY the context provided. If the answer isn't there, say you don't know. only do a friendly response for 'hi', 'hey', means for greeting messages and focus on document"
+        for chunk in context:
+            line = f"source: {chunk['file']} (page{chunk['page']}): {chunk['text']}"
+
+            formated_chunks.append(line)
+
+        full_text = "\n\n".join(formated_chunks)
+
+        instructions = (
+            "You are CogniFlow, a professional PDF analyst. Answer the question using ONLY the context provided. "
+            "If the answer isn't there, say you don't know. Only do a friendly response for 'hi' or 'hey' greeting messages. "
+            "CRITICAL RULE: You must always explicitly mention the source filename and page number at the end of your answer as a citation."
+        )
+
         user_message = f"Document Data: {full_text}\n\nUser Question: {question}"
 
         response = self.client.chat.completions.create(
@@ -34,8 +46,6 @@ class knowledgeBrain():
             if Content:      
                 yield Content
 
-        # return response.choices[0].message.content
-
 if __name__ == "__main__":
     engine = knowledgeBrain()
     VaultEngine = VectorVault()
@@ -47,7 +57,7 @@ if __name__ == "__main__":
 
     # Safety Guard: Ensure chunks is handled as a list of strings
     if isinstance(chunks, str):
-        chunks = [chunks]
+        chunks = []
 
     print(f"DEBUG Chunks Passed to AI: {chunks}\n")
     

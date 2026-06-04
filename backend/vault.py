@@ -45,10 +45,24 @@ class VectorVault:
                 query_texts=[question],
                 n_results=n_result,
             )     
+        print(Ans)
 
-        result = Ans["documents"]
+        text_list = Ans["documents"][0] if Ans["documents"] else []
+        meta_list = Ans["metadatas"][0] if Ans["metadatas"] else []
 
-        return result[0] if result else []
+        result = []
+
+        for index in range(len(text_list)):
+
+            chunk_dic = {
+                "text": text_list[index],
+                "file": meta_list[index]["file_name"],
+                "page": meta_list[index]["page_number"]
+            }
+
+            result.append(chunk_dic)
+            
+        return result
 
     def count(self) -> int:
         return self.collected_data.count()
