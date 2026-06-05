@@ -26,20 +26,20 @@ class watcher(PatternMatchingEventHandler):
     def start_watcher(path_to_watch="./documents/"):
         event_handler=watcher()
 
-        Observer = Observer()
-        Observer.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
-        Oberser.start()
+        obs = Observer()
+        obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
+        obs.start()
 
         print(f"Watcher started on path: {path_to_watch}")
-        return observer
+        return obs
 
 if __name__ == "__main__":
 
-    obs = start_watcher()
+    engine = start_watcher()
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        Observer.stop()
-    Observer.join()
+        Obs.stop()
+    Obs.join()
