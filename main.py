@@ -2,6 +2,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from backend.core import CogniFlow
 from fastapi.middleware.cors import CORSMiddleware
 from backend.watcher import start_watcher
+from contextlib import asynccontextmanager
 import logging
 import os
 import time
@@ -11,7 +12,25 @@ logging.basicConfig(filename="./logs/logs", level=logging.INFO)
 
 engine = CogniFlow()
 
-app = FastAPI()
+def run_watcher_thread():
+    observer = start_watcher("./documents/") 
+    try:
+        while True:
+            time.sleep(1)
+    except Exception as e:
+        logging.error(f"Watcher background error: {e}")
+    finally:
+        observer.stop()
+        observer.join()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    watcher_thread = threading.Thread(target=run_watcher_thread, daemon=True)
+    watcher_thread.start()
+    
+    yield 
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,23 +39,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-def run_watcher_thread():
-    # Call the exact same setup logic with zero duplication!
-    observer = start_watcher("./documents/") 
-    try:
-        while True:
-            time.sleep(1)
-    except Exception as e:
-        pass
-    finally:
-        observer.stop()
-        observer.join()
-
-@app.on_event("startup")
-async def startup_event():
-    threading.Thread(target=run_watcher_thread, daemon=True).start()
 
 @app.websocket("/chat")
 
