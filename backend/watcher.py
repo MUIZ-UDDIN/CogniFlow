@@ -30,7 +30,7 @@ class watcher(PatternMatchingEventHandler):
         obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
         obs.start()
 
-        print(f"Watcher started on path: {path_to_watch}")
+        print(f"Watcher started on path: {path_to_watch}")  
         return obs
 
 if __name__ == "__main__":
