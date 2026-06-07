@@ -36,7 +36,6 @@ class watcher(PatternMatchingEventHandler):
 if __name__ == "__main__":
 
     engine = start_watcher()
-
     try:
         while True:
             time.sleep(1)
