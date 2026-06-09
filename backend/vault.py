@@ -1,5 +1,5 @@
 import chromadb
-from ingestor import DocumentIngester
+from backend.ingestor import DocumentIngester
 from chromadb.utils import embedding_functions
 
 Worker = DocumentIngester()

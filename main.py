@@ -12,8 +12,10 @@ logging.basicConfig(filename="./logs/logs", level=logging.INFO)
 
 engine = CogniFlow()
 
+active_connections: list[WebSocket] = []
+
 def run_watcher_thread():
-    observer = start_watcher("./documents/") 
+    observer = start_watcher("./documents/", active_connections) 
     try:
         while True:
             time.sleep(1)

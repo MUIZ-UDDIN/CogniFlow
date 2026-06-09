@@ -23,15 +23,15 @@ class watcher(PatternMatchingEventHandler):
         
         print(f"Successfully processed {file_path}")
 
-    def start_watcher(path_to_watch="./documents/"):
-        event_handler=watcher()
+def start_watcher(path_to_watch="./documents/"):
+    event_handler=watcher()
 
-        obs = Observer()
-        obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
-        obs.start()
+    obs = Observer()
+    obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
+    obs.start()
 
-        print(f"Watcher started on path: {path_to_watch}")  
-        return obs
+    print(f"Watcher started on path: {path_to_watch}")  
+    return obs
 
 if __name__ == "__main__":
 
