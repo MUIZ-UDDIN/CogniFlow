@@ -3,6 +3,9 @@ from watchdog.events import PatternMatchingEventHandler
 from backend.ingestor import DocumentIngester
 from backend.vault import VectorVault
 import time
+import json
+import asyncio
+import os
 
 
 class watcher(PatternMatchingEventHandler):
@@ -12,6 +15,7 @@ class watcher(PatternMatchingEventHandler):
         super().__init__(patterns=["*.pdf"], ignore_directories=True)
         self.ingestor = DocumentIngester()
         self.vault = VectorVault()
+        self.connection_list = connection_list
 
     def on_created(self, event):
         file_path = event.src_path
@@ -23,8 +27,29 @@ class watcher(PatternMatchingEventHandler):
         
         print(f"Successfully processed {file_path}")
 
-def start_watcher(path_to_watch="./documents/"):
-    event_handler=watcher()
+        just_filename = os.path.basename(file_path)
+        payload = {
+            "type": "new_file",
+            "name": just_filename
+        }
+
+        json_message = json.dumps(payload)
+
+        for ws in self.connections_list:
+            try:
+                # Fetch the active FastAPI event loop
+                loop = asyncio.get_event_loop()
+                # Safely deliver the package from this standard thread to the async loop
+                asyncio.run_coroutine_threadsafe(ws.send_text(json_message), loop)
+            except Exception as e:
+                print(f"Failed to alert a browser tab: {e}")
+
+
+def start_watcher(path_to_watch="./documents/", connection_list= None):
+    if connection_list is None:
+        connection_list = []
+
+    event_handler=watcher(connection_list)
 
     obs = Observer()
     obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)
@@ -41,5 +66,9 @@ if __name__ == "__main__":
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        Obs.stop()
-    Obs.join()
+        print("\nStopping watcher...")
+    finally:
+        # This ALWAYS runs, preventing ghost background threads
+        engine.stop()
+        engine.join()
+        print("Watcher stopped cleanly.")
