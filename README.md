@@ -2,7 +2,7 @@
 
 **CogniFlow** is a next-generation Retrieval-Augmented Generation (RAG) system that transforms static documents into a dynamic, searchable, and chat-capable knowledge base. Built with a decoupled architecture, it features a high-performance Python backend and a real-time streaming Next.js interface.
 
-screenshot
+<img width="3839" height="1972" alt="image" src="https://github.com/user-attachments/assets/36b2d358-bc1e-43b9-98ea-19e3a84b3276" />
 
 ## 🚀 Key Features
 
