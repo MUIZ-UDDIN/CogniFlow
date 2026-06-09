@@ -10,12 +10,13 @@ import os
 
 class watcher(PatternMatchingEventHandler):
 
-    def __init__(self) -> None:
+    def __init__(self, connections_list: list, loop) -> None:
         
         super().__init__(patterns=["*.pdf"], ignore_directories=True)
         self.ingestor = DocumentIngester()
         self.vault = VectorVault()
-        self.connection_list = connection_list
+        self.connections_list = connections_list
+        self.loop = loop
 
     def on_created(self, event):
         file_path = event.src_path
@@ -37,19 +38,23 @@ class watcher(PatternMatchingEventHandler):
 
         for ws in self.connections_list:
             try:
-                # Fetch the active FastAPI event loop
-                loop = asyncio.get_event_loop()
-                # Safely deliver the package from this standard thread to the async loop
-                asyncio.run_coroutine_threadsafe(ws.send_text(json_message), loop)
+                asyncio.run_coroutine_threadsafe(ws.send_text(json_message), self.loop)
             except Exception as e:
                 print(f"Failed to alert a browser tab: {e}")
 
 
-def start_watcher(path_to_watch="./documents/", connection_list= None):
-    if connection_list is None:
-        connection_list = []
+def start_watcher(path_to_watch="./documents/", connections_list= None, loop= None):
+    if connections_list is None:
+        connections_list = []
 
-    event_handler=watcher(connection_list)
+    if loop is None:
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+    event_handler=watcher(connections_list, loop)
 
     obs = Observer()
     obs.schedule(event_handler=event_handler, path=path_to_watch, recursive=True)

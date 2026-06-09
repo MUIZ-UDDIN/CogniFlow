@@ -45,7 +45,6 @@ class VectorVault:
                 query_texts=[question],
                 n_results=n_result,
             )     
-        print(Ans)
 
         text_list = Ans["documents"][0] if Ans["documents"] else []
         meta_list = Ans["metadatas"][0] if Ans["metadatas"] else []

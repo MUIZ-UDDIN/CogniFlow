@@ -1,16 +1,16 @@
 "use client";
 
 import { PlusIcon, FileTextIcon, MessageSquareIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
   interface SidebarProps {
     SelectedFile: string | null;
     onSelectedFile: (fileName: string) => void;
+    files: string[];
+    setFiles: React.Dispatch<React.SetStateAction<string[]>>; 
   }
 
-export default function Sidebar({ SelectedFile, onSelectedFile }: SidebarProps) {
-
-  const [files, setFiles] = useState<string[]>([])
+export default function Sidebar({ SelectedFile, onSelectedFile, files, setFiles }: SidebarProps) {
 
   useEffect(() => {
     fetch("http://localhost:8000/files")
@@ -18,7 +18,7 @@ export default function Sidebar({ SelectedFile, onSelectedFile }: SidebarProps) 
       .then(data => setFiles(data))
 
       .catch((err) => console.log("Error fetching files:", err))
-  }, [])
+  }, [setFiles])
 
   return (
     <aside className="flex h-full w-80 shrink-0 flex-col bg-slate-900 border-r border-slate-800">

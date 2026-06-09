@@ -21,12 +21,12 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [SelectFile, setSelectFile] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
 
-  // 1. Define the Ref for the WebSocket connection
+  const [files, setFiles] = useState<string[]>([]);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
   const socketRef = useRef<WebSocket | null>(null);
 
-  // Auto-scroll to the latest message whenever messages change
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -41,48 +41,54 @@ export default function ChatPage() {
     };
 
     ws.onmessage = (event) => {
-      const chunk = event.data;
+      try {
+        // 🎯 STEP B: Unpack the server envelope string back into a JS object
+        const parsedData = JSON.parse(event.data);
 
-      // Turn off loading animation once chunks start coming in
-      setIsLoading(false);
+        // CASE A: It's an AI streaming syllable
+        if (parsedData.type === "token") {
+          const chunk = parsedData.content;
+          setIsLoading(false);
 
-      // The Secret for Streaming: Functional updates + updating the last item
-      setMessages((prev) => {
-        const lastMessage = prev[prev.length - 1];
+          setMessages((prev) => {
+            const lastMessage = prev[prev.length - 1];
+            if (lastMessage && lastMessage.role === "assistant" && lastMessage.id !== "1") {
+              return [
+                ...prev.slice(0, -1),
+                { ...lastMessage, content: lastMessage.content + chunk },
+              ];
+            }
 
-        // If the last message is already from the assistant, append text to it
-        if (lastMessage && lastMessage.role === "assistant" && lastMessage.id !== "1") {
-          return [
-            ...prev.slice(0, -1), // Everything except the last message
-            { ...lastMessage, content: lastMessage.content + chunk }, // Append chunk
-          ];
+            const newAiMsg: Message = {
+              id: Date.now().toString(),
+              role: "assistant",
+              content: chunk,
+              timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            };
+            return [...prev, newAiMsg];
+          });
+        } 
+        
+        // CASE B: LIVE SYNC TRIPPED! The watcher added a file!
+        else if (parsedData.type === "new_file") {
+          const newFileName = parsedData.name;
+
+          // Add the file straight to our shared array state
+          setFiles((prevFiles) => {
+            if (prevFiles.includes(newFileName)) return prevFiles;
+            return [...prevFiles, newFileName];
+          });
         }
 
-        // If it's a brand new response stream, create a new assistant message object
-        const newAiMsg: Message = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: chunk,
-          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        };
-        return [...prev, newAiMsg];
-      });
+      } catch (error) {
+        console.error("Failed to parse incoming package data:", error);
+      }
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket Error:", error);
-      setIsLoading(false);
-    };
+    ws.onerror = () => setIsLoading(false);
+    ws.onclose = () => setIsLoading(false);
 
-    ws.onclose = () => {
-      console.log("WebSocket Disconnected");
-      setIsLoading(false);
-    };
-
-    // Clean up connection when the component unmounts
-    return () => {
-      ws.close();
-    };
+    return () => ws.close();
   }, []);
 
   // 3. Update handleSend to stream data out via WebSocket
@@ -118,9 +124,12 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+
       <Sidebar 
         SelectedFile = {SelectFile}
         onSelectedFile = {setSelectFile}
+        files={files}
+        setFiles={setFiles}
       />
     
     <main className="flex flex-1 flex-col overflow-hidden">

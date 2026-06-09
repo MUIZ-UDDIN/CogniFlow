@@ -7,6 +7,7 @@ import logging
 import os
 import time
 import threading
+import asyncio
 
 logging.basicConfig(filename="./logs/logs", level=logging.INFO)
 
@@ -14,8 +15,8 @@ engine = CogniFlow()
 
 active_connections: list[WebSocket] = []
 
-def run_watcher_thread():
-    observer = start_watcher("./documents/", active_connections) 
+def run_watcher_thread(loop):
+    observer = start_watcher("./documents/", active_connections, loop) 
     try:
         while True:
             time.sleep(1)
@@ -27,7 +28,9 @@ def run_watcher_thread():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    watcher_thread = threading.Thread(target=run_watcher_thread, daemon=True)
+    main_loop = asyncio.get_running_loop()
+
+    watcher_thread = threading.Thread(target=run_watcher_thread, args=(main_loop,), daemon=True)
     watcher_thread.start()
     
     yield 
