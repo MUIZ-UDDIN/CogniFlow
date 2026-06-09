@@ -46,18 +46,30 @@ app.add_middleware(
 
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
+    active_connections.append(websocket)
 
     try:
-        while True:
-            data = await websocket.receive_json()
-            UserQuestion = data["question"]
-            SelectedDoc = data["file"]
+        try:
+            while True:
+                data = await websocket.receive_json()
+                UserQuestion = data["question"]
+                SelectedDoc = data["file"]
 
-            for words in engine.ask_question(UserQuestion, SelectedDoc):
-                await websocket.send_text(words)
+                for words in engine.ask_question(UserQuestion, SelectedDoc):
+                    payload = {
+                        "type": "token",
+                        "content": words
+                    }
+                    await websocket.send_json(payload)
 
-    except WebSocketDisconnect:
-        logging.info("User has disconnected gracefully!")
+        except WebSocketDisconnect:
+            logging.info("User has disconnected gracefully!")
+
+    finally:
+        if websocket in active_connections:
+            active_connections.remove(websocket)
+
+        logging.info("Cleaned up and safely signed out connection path.")
 
 @app.get("/files")  
 
